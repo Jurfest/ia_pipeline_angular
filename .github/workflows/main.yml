@@ -138,8 +138,8 @@ jobs:
     needs: [checkout-repo, setup-node, install-dependencies, build]
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      # - name: Checkout repository
+        # uses: actions/checkout@v2
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
@@ -148,4 +148,13 @@ jobs:
           publish_branch: gh-pages
           publish_dir: dist/ia-pipeline-angular
           enable_jekyll: true
+
+      # - name: Deploy to GitHub Pages
+      #   uses: peaceiris/actions-gh-pages@v3
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     publish_branch: gh-pages
+      #     publish_dir: dist/ia-pipeline-angular
+      #     enable_jekyll: true
+
 
