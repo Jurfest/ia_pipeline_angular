@@ -51,6 +51,9 @@ jobs:
   setup-node:
     name: Setup Node.js
     runs-on: ubuntu-latest
+
+    needs: [checkout-repo]
+    
     steps:
       - name: Setup Node on runner
         uses: actions/setup-node@v3
