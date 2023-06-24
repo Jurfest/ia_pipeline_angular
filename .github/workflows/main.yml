@@ -1,107 +1,50 @@
 name: GitHub Actions IA Pipeline
+
 on:
   push:
     branches:
       - main
-
   pull_request:
     branches:
       - main
-
   schedule:
     # At 03:35 on Saturday
     - cron: '35 3 * * 6'
-
   workflow_dispatch:
 
 jobs:
-  Example-Actions-Job:
-    name: GitHub Actions IA Pipeline - First Job
+  build-and-deploy:
+    name: Build and Deploy
     runs-on: ubuntu-latest
+
     steps:
-      # Display the event that triggered the workflow
-      - run: echo "The job was triggered by a ${{ github.event_name }} event."
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-      # Runner information
-      - run: echo "This job is now running on a ${{ runner.os }} server hosted by GitHub"
-
-      # Information about the repository and branch
-      - run: echo "The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-
-      # Use Action located in https://github.com/actions
-      - name: Check out repository code
-        uses: actions/checkout@v3
-
-      - run: echo "The ${{ github.repository }} repository has been cloned to the runner."
-
-      - run: echo "Your repository has been copied to the path ${{ github.workspace }} on the runner."
-
-      - run: echo "The workflow is now ready to test your code on the runner."
-
-      - name: conditional step when event name is pull request
-        if: ${{ github.event_name == 'pull_request' }}
-        run: echo "This event is a pull request"
-
-      - name: List files in the repository
-        run: |
-          ls ${{ github.workspace }}
-
-      - name: Setup Node on runner
-        uses: actions/setup-node@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
         with:
-          node-version: 16
+          node-version: '16'
 
       - name: Install Dependencies
-        run: yarn
-      # - run: npm test
+        run: yarn install --frozen-lockfile
 
       - name: Build
-        run: yarn run build --prod
+        run: yarn build --prod
 
       - name: Lint
-        run: yarn run lint
+        run: yarn lint
 
       - name: Test
-        run: yarn run test --single-run=true --progress=false
+        run: yarn test --single-run=true --progress=false
 
       - name: Display Angular version
-        run: yarn run ng version
-
-      # - name: Deploy Angular
-      #   run: |
-      #     npm run deploy
-      #   env:
-      #     GH_TOKEN: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
-
-      #
-      # - name: Create Release
-      #   uses: actions/create-release@v1
-      #   if: ${{ steps.changelog.outputs.skipped == 'false' }}
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB_ACTION }}
-      #   with:
-      #     tag_name: ${{ steps.changelog.outputs.tag }}
-      #     release_name: ${{ steps.changelog.outputs.tag }}
-      #     body: ${{ steps.changelog.outputs.clean_changelog }}
-
-      - run: echo "The preinstalled tools are located here on the runner ${{ runner.tool_cache }}."
-
-      - name: List files in tool cache
-        run: |
-          ls ${{ runner.tool_cache }}
+        run: yarn ng version
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
-          publish_dir: dist  # Adjust this directory based on your project setup
+          publish_dir: dist
 
-      - run: echo "This job's status is ${{ job.status }}."
-
-  # Second-Job:
-  #   name: The second job running on another runner
-  #   runs-on: windows-latest
-  #   needs: Example-Actions-Job
-  #   steps:
-  #     - run: echo "This job is now running on a ${{ runner.os }} server hosted by GitHub."
