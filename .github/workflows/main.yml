@@ -104,3 +104,17 @@ jobs:
       - name: Display Angular version
         run: yarn ng version
 
+  Final-Job-Status:
+    name: Final Job Status
+    needs: [deploy-gh-pages]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Deploy status
+        id: deploy_job
+        uses: actions/github-script@v4
+        with:
+          script: echo "${{ needs.deploy-gh-pages.outputs.job_status }}"
+
+      - name: Display Final Job Status
+        run: |
+          echo "deploy-gh-pages status: ${{ steps.deploy-gh-pages.outputs.result }}"
