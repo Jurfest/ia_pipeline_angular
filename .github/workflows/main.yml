@@ -48,9 +48,11 @@ jobs:
     needs: [checkout-repo, setup-node, install-dependencies]
 
     steps:
+      - name: List files in the repository
+        run: |
+          ls ${{ github.workspace }}
       - name: Build
         run: |
-          cd ia_pipeline_angular  # Change to the correct directory
           yarn build --prod
 
   lint:
