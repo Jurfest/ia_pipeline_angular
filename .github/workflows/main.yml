@@ -16,7 +16,7 @@ on:
 
 jobs:
   Example-Actions-Job:
-    name: Exploring GitHub Actions
+    name: GitHub Actions IA Pipeline - First Job
     runs-on: ubuntu-latest
     steps:
       # Display the event that triggered the workflow
