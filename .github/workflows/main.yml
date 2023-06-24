@@ -95,7 +95,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
-          publish_dir: dist  # Adjust this directory based on your project setup
+          publish_dir: dist/ia-pipeline-angular  # Adjust this directory based on your project setup
 
       - run: echo "This job's status is ${{ job.status }}."
 
