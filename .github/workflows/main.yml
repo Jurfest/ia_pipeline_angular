@@ -1,4 +1,5 @@
 name: GitHub Actions IA Pipeline
+
 on:
   push:
     branches:
@@ -15,47 +16,58 @@ on:
   workflow_dispatch:
 
 jobs:
-  checkout-repo:
-    name: GitHub Actions IA Pipeline - First Job
+  job1-checkout-setup:
+    name: Checkout and Setup
     runs-on: ubuntu-latest
     steps:
-      # Display the event that triggered the workflow
-      - run: echo "The job was triggered by a ${{ github.event_name }} event."
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-      # Runner information
-      - run: echo "This job is now running on a ${{ runner.os }} server hosted by GitHub"
+      - name: Display event details
+        run: echo "The job was triggered by a ${{ github.event_name }} event."
 
-      # Information about the repository and branch
-      - run: echo "The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - name: Display runner information
+        run: echo "This job is now running on a ${{ runner.os }} server hosted by GitHub"
 
-      # Use Action located in https://github.com/actions
+      - name: Display repository and branch details
+        run: echo "The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+
       - name: Check out repository code
         uses: actions/checkout@v3
 
-      - run: echo "The ${{ github.repository }} repository has been cloned to the runner."
+      - name: Display repository clone status
+        run: echo "The ${{ github.repository }} repository has been cloned to the runner."
 
-      - run: echo "Your repository has been copied to the path ${{ github.workspace }} on the runner."
-
-      - run: echo "The workflow is now ready to test your code on the runner."
-
-      - name: conditional step when event name is pull request
-        if: ${{ github.event_name == 'pull_request' }}
-        run: echo "This event is a pull request"
-
-      - name: List files in the repository
-        run: |
-          ls ${{ github.workspace }}
+  job2-install-dependencies:
+    name: Install Dependencies
+    runs-on: ubuntu-latest
+    needs: job1-checkout-setup
+    steps:
+      - name: Checkout repository again
+        uses: actions/checkout@v2
 
       - name: Setup Node on runner
         uses: actions/setup-node@v3
         with:
           node-version: 16
 
+      - name: Install Nx CLI
+        run: yarn global add nx
+
       - name: Install Dependencies
-        run: yarn
+        run: yarn install --frozen-lockfile
+
+  job3-build-lint-test:
+    name: Build, Lint, and Test
+    runs-on: ubuntu-latest
+    needs: job2-install-dependencies
+    steps:
+      - name: Checkout repository again
+        uses: actions/checkout@v2
 
       - name: Build
-        run: yarn run build --configuration --prod --base-href=https://jurfest.github.io/ia_pipeline_angular/
+        run: npx nx build --configuration --prod --base-href=https://jurfest.github.io/ia_pipeline_angular/
+        # run: yarn run build --configuration=production --base-href=https://jurfest.github.io/ia_pipeline_angular/
 
       - name: Lint
         run: yarn run lint
@@ -72,13 +84,14 @@ jobs:
         run: |
           ls ${{ runner.tool_cache }}
 
-  deploy-gh-pages:
+  job4-deploy-gh-pages:
     name: Deploy to GitHub Pages
     runs-on: ubuntu-latest
-
-    needs: [checkout-repo]
-
+    needs: job3-build-lint-test
     steps:
+      - name: Checkout repository again
+        uses: actions/checkout@v2
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
@@ -87,4 +100,5 @@ jobs:
           publish_dir: dist/ia-pipeline-angular
           enable_jekyll: true
 
-      - run: echo "This job's status is ${{ job.status }}."
+      - name: Display job status
+        run: echo "This job's status is ${{ job.status }}."
