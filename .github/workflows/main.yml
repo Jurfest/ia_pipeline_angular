@@ -91,18 +91,12 @@ jobs:
           ls ${{ runner.tool_cache }}
 
       - name: Deploy to GitHub Pages
-        uses: angular-actions/github-pages-deploy@v0.4.1
+        uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          build_dir: dist/ia-pipeline-angular 
-          branch: gh-pages
-        # uses: peaceiris/actions-gh-pages@v3
-        # with:
-        #   github_token: ${{ secrets.GITHUB_TOKEN }}
-        #   publish_branch: gh-pages
-        #   publish_dir: dist/ia-pipeline-angular  # Adjust this directory based on your project setup
-
-        
+          publish_branch: gh-pages
+          publish_dir: dist/ia-pipeline-angular  # Adjust this directory based on your project setup
+          enable_jekyll: true
 
       - run: echo "This job's status is ${{ job.status }}."
 
