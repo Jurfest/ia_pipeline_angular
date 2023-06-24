@@ -53,6 +53,7 @@ jobs:
           node-version: 16
 
       - name: Install Dependencies
+        working-directory: ia_pipeline_angular
         run: yarn
 
       - name: Build
