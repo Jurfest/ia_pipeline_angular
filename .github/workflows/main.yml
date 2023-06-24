@@ -1,149 +1,31 @@
-name: GitHub Actions IA Pipeline
-
+name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main
-  pull_request:
-    branches:
-      - main
-  schedule:
-    # At 03:35 on Saturday
-    - cron: '35 3 * * 6'
-  workflow_dispatch:
+      - main  # Change to the branch you want to trigger the deployment from
 
 jobs:
-  checkout-repo:
-    name: Checkout Repository
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-  setup-node:
-    name: Setup Node.js
-    runs-on: ubuntu-latest
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
 
-    steps:
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
+    - name: Install dependencies
+      run: npm ci
 
-  install-dependencies:
-    name: Install Dependencies
-    runs-on: ubuntu-latest
+    - name: Build
+      run: npm run build  # Adjust this command based on your project setup
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-
-      - name: Install Dependencies
-        run: yarn install --frozen-lockfile
-
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-
-    needs: [checkout-repo, setup-node, install-dependencies]
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-
-      - name: Install Dependencies
-        run: yarn install --frozen-lockfile
-
-      - name: Build
-        run: yarn build --prod
-
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-
-    needs: [checkout-repo, setup-node, install-dependencies]
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-
-      - name: Install Dependencies
-        run: yarn install --frozen-lockfile
-
-      - name: Lint
-        run: yarn lint
-
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-
-    needs: [checkout-repo, setup-node, install-dependencies]
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-
-      - name: Install Dependencies
-        run: yarn install --frozen-lockfile
-
-      - name: Test
-        run: yarn test --single-run=true --progress=false
-
-  display-version:
-    name: Display Angular Version
-    runs-on: ubuntu-latest
-
-    needs: [checkout-repo, setup-node, install-dependencies]
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-
-      - name: Install Dependencies
-        run: yarn install --frozen-lockfile
-
-      - name: Display Angular version
-        run: yarn ng version
-
-  deploy-gh-pages:
-    name: Deploy to GitHub Pages
-    runs-on: ubuntu-latest
-
-    needs: [checkout-repo, setup-node, install-dependencies, build]
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          personal_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: dist/ia-pipeline-angular
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_branch: gh-pages
+        publish_dir: ./build  # Adjust this directory based on your project setup
