@@ -131,6 +131,19 @@ jobs:
       - name: Display Angular version
         run: yarn ng version
 
+  deploy-gh-pages:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: dist/ia-pipeline-angular
+          enable_jekyll: true
+
   # deploy-gh-pages:
   #   name: Deploy to GitHub Pages
   #   runs-on: ubuntu-latest
@@ -148,15 +161,4 @@ jobs:
   #         publish_branch: gh-pages
   #         publish_dir: dist/ia-pipeline-angular
   #         enable_jekyll: true
-   deploy-gh-pages:
-    name: Deploy to GitHub Pages
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: dist/ia-pipeline-angular
-          enable_jekyll: true
+   
