@@ -13,129 +13,67 @@ on:
   workflow_dispatch:
 
 jobs:
-  checkout-repo:
-    name: Checkout Repository
+  first-job:
+    name: First Job
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - name: Display event information
+        run: echo "The job was triggered by a ${{ github.event_name }} event."
 
-  setup-node:
-    name: Setup Node.js
+      - name: Display runner information
+        run: echo "This job is now running on a ${{ runner.os }} server hosted by GitHub"
+
+      - name: Display repository and branch information
+        run: echo "The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+
+      - name: Checkout repository code
+        uses: actions/checkout@v3
+
+      - name: Display repository clone information
+        run: |
+          echo "The ${{ github.repository }} repository has been cloned to the runner."
+          echo "Your repository has been copied to the path ${{ github.workspace }} on the runner."
+
+      - name: Conditional step for pull request event
+        if: ${{ github.event_name == 'pull_request' }}
+        run: echo "This event is a pull request"
+
+      - name: List files in the repository
+        run: |
+          ls ${{ github.workspace }}
+
+  second-job:
+    name: Second Job
     runs-on: ubuntu-latest
-
+    needs: first-job
     steps:
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
+      - name: Setup Node on runner
+        uses: actions/setup-node@v3
         with:
-          node-version: '16'
-
-  install-dependencies:
-    name: Install Dependencies
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
+          node-version: 16
 
       - name: Install Dependencies
-        run: yarn install --frozen-lockfile
-
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-
-    needs: [checkout-repo, setup-node, install-dependencies]
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-
-      - name: Install Dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn
 
       - name: Build
-        run: yarn run build --configuration --prod --base-href=https://jurfest.github.io/ia_pipeline_angular/
-
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-
-    needs: [checkout-repo, setup-node, install-dependencies]
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-
-      - name: Install Dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn run build --configuration=production --base-href=https://jurfest.github.io/ia_pipeline_angular/
 
       - name: Lint
-        run: yarn lint
-
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-
-    needs: [checkout-repo, setup-node, install-dependencies]
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-
-      - name: Install Dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn run lint
 
       - name: Test
-        run: yarn test --single-run=true --progress=false
-
-  display-version:
-    name: Display Angular Version
-    runs-on: ubuntu-latest
-
-    needs: [checkout-repo, setup-node, install-dependencies]
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-
-      - name: Install Dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn run test --single-run=true --progress=false
 
       - name: Display Angular version
-        run: yarn ng version
+        run: yarn run ng version
 
-  deploy-gh-pages:
-    name: Deploy to GitHub Pages
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
+      - name: Display preinstalled tools location
+        run: echo "The preinstalled tools are located here on the runner ${{ runner.tool_cache }}."
+
+      - name: List files in tool cache
+        run: |
+          ls ${{ runner.tool_cache }}
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
@@ -144,21 +82,5 @@ jobs:
           publish_dir: dist/ia-pipeline-angular
           enable_jekyll: true
 
-  # deploy-gh-pages:
-  #   name: Deploy to GitHub Pages
-  #   runs-on: ubuntu-latest
-
-  #   needs: [checkout-repo, setup-node, install-dependencies, build]
-
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v2
-
-  #     - name: Deploy to GitHub Pages
-  #       uses: peaceiris/actions-gh-pages@v3
-  #       with:
-  #         github_token: ${{ secrets.GITHUB_TOKEN }}
-  #         publish_branch: gh-pages
-  #         publish_dir: dist/ia-pipeline-angular
-  #         enable_jekyll: true
-   
+      - name: Display job status
+        run: echo "This job's status is ${{ job.status }}."
