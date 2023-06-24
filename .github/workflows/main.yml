@@ -56,7 +56,7 @@ jobs:
       # - run: npm test
 
       - name: Build
-        run: yarn run build --configuration --prod --base-href https://jurfest.github.io/ia_pipeline_angular/
+        run: yarn run build --configuration --prod --base-href=https://jurfest.github.io/ia_pipeline_angular/
 
       - name: Lint
         run: yarn run lint
