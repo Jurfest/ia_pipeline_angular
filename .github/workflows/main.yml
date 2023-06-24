@@ -16,7 +16,6 @@ jobs:
   checkout-repo:
     name: Checkout Repository
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -24,7 +23,6 @@ jobs:
   setup-node:
     name: Setup Node.js
     runs-on: ubuntu-latest
-
     steps:
       - name: Setup Node.js
         uses: actions/setup-node@v2
@@ -34,113 +32,47 @@ jobs:
   install-dependencies:
     name: Install Dependencies
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
 
   build:
     name: Build
     runs-on: ubuntu-latest
-
     needs: [checkout-repo, setup-node, install-dependencies]
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-
-      - name: Install Dependencies
-        run: yarn install --frozen-lockfile
-
       - name: Build
         run: yarn run build --configuration --prod --base-href=https://jurfest.github.io/ia_pipeline_angular/
 
   lint:
     name: Lint
     runs-on: ubuntu-latest
-
     needs: [checkout-repo, setup-node, install-dependencies]
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-
-      - name: Install Dependencies
-        run: yarn install --frozen-lockfile
-
       - name: Lint
         run: yarn lint
 
   test:
     name: Test
     runs-on: ubuntu-latest
-
     needs: [checkout-repo, setup-node, install-dependencies]
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-
-      - name: Install Dependencies
-        run: yarn install --frozen-lockfile
-
       - name: Test
         run: yarn test --single-run=true --progress=false
 
   display-version:
     name: Display Angular Version
     runs-on: ubuntu-latest
-
     needs: [checkout-repo, setup-node, install-dependencies]
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-
-      - name: Install Dependencies
-        run: yarn install --frozen-lockfile
-
       - name: Display Angular version
         run: yarn ng version
 
   deploy-gh-pages:
     name: Deploy to GitHub Pages
     runs-on: ubuntu-latest
-
     needs: [checkout-repo, setup-node, install-dependencies, build]
-
     steps:
-      # - name: Checkout repository
-        # uses: actions/checkout@v2
-
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
@@ -148,13 +80,3 @@ jobs:
           publish_branch: gh-pages
           publish_dir: dist/ia-pipeline-angular
           enable_jekyll: true
-
-      # - name: Deploy to GitHub Pages
-      #   uses: peaceiris/actions-gh-pages@v3
-      #   with:
-      #     github_token: ${{ secrets.GITHUB_TOKEN }}
-      #     publish_branch: gh-pages
-      #     publish_dir: dist/ia-pipeline-angular
-      #     enable_jekyll: true
-
-
