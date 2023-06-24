@@ -1,120 +1,213 @@
 name: GitHub Actions IA Pipeline
+
 on:
   push:
     branches:
       - main
-
   pull_request:
     branches:
       - main
-
   schedule:
     # At 03:35 on Saturday
     - cron: '35 3 * * 6'
-
   workflow_dispatch:
 
 jobs:
-  deploy-gh-pages:
-    name: Deploy to GitHub Pages
-
+  checkout-repo:
+    name: Checkout Repository
     runs-on: ubuntu-latest
-    steps:
-      # Display the event that triggered the workflow
-      - run: echo "The job was triggered by a ${{ github.event_name }} event."
-
-      # Runner information
-      - run: echo "This job is now running on a ${{ runner.os }} server hosted by GitHub"
-
-      # Information about the repository and branch
-      - run: echo "The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-
-      # Use Action located in https://github.com/actions
-      - name: Check out repository code
-        uses: actions/checkout@v3
-
-      - run: echo "The ${{ github.repository }} repository has been cloned to the runner."
-
-      - run: echo "Your repository has been copied to the path ${{ github.workspace }} on the runner."
-
-      - run: echo "The workflow is now ready to test your code on the runner."
-
-      - name: conditional step when event name is pull request
-        if: ${{ github.event_name == 'pull_request' }}
-        run: echo "This event is a pull request"
-
-      - name: List files in the repository
-        run: |
-          ls ${{ github.workspace }}
-
-      - name: Setup Node on runner
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-
-      - name: Install Dependencies
-        run: yarn
-
-      - name: Build
-        run: yarn run build --configuration --prod --base-href=https://jurfest.github.io/ia_pipeline_angular/
-
-      - name: Lint
-        run: yarn run lint
-
-      - name: Test
-        run: yarn run test --single-run=true --progress=false
-
-      - name: Display Angular version
-        run: yarn run ng version
-
-      - run: echo "The preinstalled tools are located here on the runner ${{ runner.tool_cache }}."
-
-      - name: List files in tool cache
-        run: |
-          ls ${{ runner.tool_cache }}
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: dist/ia-pipeline-angular
-          enable_jekyll: true
-
-      - run: echo "This job's status is ${{ job.status }}."
-
-  display-version:
-    name: Display Angular Version
-    runs-on: ubuntu-latest
-
-    needs: [deploy-gh-pages]
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+  setup-node:
+    name: Setup Node.js
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
           node-version: '16'
 
+  install-dependencies:
+    name: Install Dependencies
+    runs-on: ubuntu-latest
+
+    needs: checkout-repo
+
+    steps:
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
 
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    needs: [checkout-repo, setup-node, install-dependencies]
+
+    steps:
+      - name: Build
+        run: yarn build --prod
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    needs: install-dependencies
+
+    steps:
+      - name: Lint
+        run: yarn lint
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    needs: install-dependencies
+
+    steps:
+      - name: Test
+        run: yarn test --single-run=true --progress=false
+
+  display-version:
+    name: Display Angular Version
+    runs-on: ubuntu-latest
+
+    needs: install-dependencies
+
+    steps:
       - name: Display Angular version
         run: yarn ng version
 
-  Final-Job-Status:
-    name: Final Job Status
-    needs: [deploy-gh-pages]
+  deploy-gh-pages:
+    name: Deploy to GitHub Pages
     runs-on: ubuntu-latest
-    steps:
-      - name: Check Deploy status
-        id: deploy_job
-        uses: actions/github-script@v4
-        with:
-          script: echo "${{ needs.deploy-gh-pages.outputs.job_status }}"
 
-      - name: Display Final Job Status
-        run: |
-          echo "deploy-gh-pages status: ${{ steps.deploy-gh-pages.outputs.result }}"
+    needs: build
+
+    steps:
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          personal_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./dist/ia-pipeline-angular
+
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     publish_branch: gh-pages
+      #     publish_dir: dist/ia-pipeline-angular
+      #     enable_jekyll: true
+
+      # - run: echo "This job's status is ${{ job.status }}."
+
+
+
+
+# name: GitHub Actions IA Pipeline
+# on:
+#   push:
+#     branches:
+#       - main
+
+#   pull_request:
+#     branches:
+#       - main
+
+#   schedule:
+#     # At 03:35 on Saturday
+#     - cron: '35 3 * * 6'
+
+#   workflow_dispatch:
+
+# jobs:
+#   deploy-gh-pages:
+#     name: Deploy to GitHub Pages
+
+#     runs-on: ubuntu-latest
+#     steps:
+#       # Display the event that triggered the workflow
+#       - run: echo "The job was triggered by a ${{ github.event_name }} event."
+
+#       # Runner information
+#       - run: echo "This job is now running on a ${{ runner.os }} server hosted by GitHub"
+
+#       # Information about the repository and branch
+#       - run: echo "The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+
+#       # Use Action located in https://github.com/actions
+#       - name: Check out repository code
+#         uses: actions/checkout@v3
+
+#       - run: echo "The ${{ github.repository }} repository has been cloned to the runner."
+
+#       - run: echo "Your repository has been copied to the path ${{ github.workspace }} on the runner."
+
+#       - run: echo "The workflow is now ready to test your code on the runner."
+
+#       - name: conditional step when event name is pull request
+#         if: ${{ github.event_name == 'pull_request' }}
+#         run: echo "This event is a pull request"
+
+#       - name: List files in the repository
+#         run: |
+#           ls ${{ github.workspace }}
+
+#       - name: Setup Node on runner
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: 16
+
+#       - name: Install Dependencies
+#         run: yarn
+
+#       - name: Build
+#         run: yarn run build --configuration --prod --base-href=https://jurfest.github.io/ia_pipeline_angular/
+
+#       - name: Lint
+#         run: yarn run lint
+
+#       - name: Test
+#         run: yarn run test --single-run=true --progress=false
+
+#       - name: Display Angular version
+#         run: yarn run ng version
+
+#       - run: echo "The preinstalled tools are located here on the runner ${{ runner.tool_cache }}."
+
+#       - name: List files in tool cache
+#         run: |
+#           ls ${{ runner.tool_cache }}
+
+#       - name: Deploy to GitHub Pages
+#         uses: peaceiris/actions-gh-pages@v3
+#         with:
+#           github_token: ${{ secrets.GITHUB_TOKEN }}
+#           publish_branch: gh-pages
+#           publish_dir: dist/ia-pipeline-angular
+#           enable_jekyll: true
+
+#       - run: echo "This job's status is ${{ job.status }}."
+
+#   display-version:
+#     name: Display Angular Version
+#     runs-on: ubuntu-latest
+
+#     needs: [deploy-gh-pages]
+
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v2
+
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v2
+#         with:
+#           node-version: '16'
+
+#       - name: Install Dependencies
+#         run: yarn install --frozen-lockfile
+
+#       - name: Display Angular version
+#         run: yarn ng version
