@@ -13,80 +13,134 @@ on:
   workflow_dispatch:
 
 jobs:
-  initialize:
-    name: Initialize
-    runs-on: ubuntu-latest
-    steps:
-      - name: Display event information
-        run: echo "The job was triggered by a ${{ github.event_name }} event."
-
-      - name: Display runner information
-        run: echo "This job is now running on a ${{ runner.os }} server hosted by GitHub"
-
-      - name: Display repository and branch information
-        run: echo "The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-
   checkout-repo:
     name: Checkout Repository
     runs-on: ubuntu-latest
+
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v3
-
-      - name: Display repository clone message
-        run: echo "The ${{ github.repository }} repository has been cloned to the runner."
-
-      - name: Display repository path
-        run: echo "Your repository has been copied to the path ${{ github.workspace }} on the runner."
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
   setup-node:
     name: Setup Node.js
     runs-on: ubuntu-latest
+
     steps:
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v2
         with:
-          node-version: 16
+          node-version: '16'
 
   install-dependencies:
     name: Install Dependencies
     runs-on: ubuntu-latest
+
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
       - name: Install Dependencies
-        run: yarn
+        run: yarn install --frozen-lockfile
 
   build:
     name: Build
     runs-on: ubuntu-latest
+
+    needs: [checkout-repo, setup-node, install-dependencies]
+
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+
       - name: Build
         run: yarn run build --configuration --prod --base-href=https://jurfest.github.io/ia_pipeline_angular/
 
   lint:
     name: Lint
     runs-on: ubuntu-latest
+
+    needs: [checkout-repo, setup-node, install-dependencies]
+
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+
       - name: Lint
-        run: yarn run lint
+        run: yarn lint
 
   test:
     name: Test
     runs-on: ubuntu-latest
+
+    needs: [checkout-repo, setup-node, install-dependencies]
+
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+
       - name: Test
-        run: yarn run test --single-run=true --progress=false
+        run: yarn test --single-run=true --progress=false
 
   display-version:
     name: Display Angular Version
     runs-on: ubuntu-latest
+
+    needs: [checkout-repo, setup-node, install-dependencies]
+
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+
       - name: Display Angular version
-        run: yarn run ng version
+        run: yarn ng version
 
   deploy-gh-pages:
     name: Deploy to GitHub Pages
     runs-on: ubuntu-latest
+
+    needs: [checkout-repo, setup-node, install-dependencies, build]
+
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
@@ -95,9 +149,3 @@ jobs:
           publish_dir: dist/ia-pipeline-angular
           enable_jekyll: true
 
-  final-steps:
-    name: Final Steps
-    runs-on: ubuntu-latest
-    steps:
-      - name: Display job status
-        run: echo "This job's status is ${{ job.status }}."
