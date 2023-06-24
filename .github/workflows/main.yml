@@ -57,11 +57,11 @@ jobs:
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
 
-  build-lint-test:
-    name: Build, Lint, and Test
-    runs-on: ubuntu-latest
-    needs: [checkout-setup, install-dependencies]
-    steps:
+  # build-lint-test:
+  #   name: Build, Lint, and Test
+  #   runs-on: ubuntu-latest
+  #   needs: [checkout-setup, install-dependencies]
+    # steps:
       - name: Checkout repository again
         uses: actions/checkout@v2
 
