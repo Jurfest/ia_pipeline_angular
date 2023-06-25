@@ -1,4 +1,4 @@
-# Ia Pipeline Angular
+# AI Pipeline Angular
 
 https://jurfest.github.io/ia_pipeline_angular/
 
